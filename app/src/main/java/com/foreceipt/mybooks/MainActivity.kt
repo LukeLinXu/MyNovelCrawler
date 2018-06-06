@@ -33,8 +33,10 @@ class MainActivity : AppCompatActivity() {
                 }
 
                 for (item in Utils.getNotDownloadNovelList()){
-                    Log.d("Luke", item.id.toString()+","+item.url)
-
+//                    Log.d("Luke", item.id.toString()+","+item.url)
+                    item.content = getContent(item)
+                    Utils.addOrUpdate(item)
+                    Log.d("Luke", item.id.toString() + "Done")
                 }
 
             }
@@ -43,11 +45,10 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun getContent(item: SingleNovel): String{
-//        val url = item.url
-        val url = "/book/55970/3049012.html"
+        val url = item.url
+//        val url = "/book/55970/3049012.html"
         val doc = Jsoup.connect(base_url + url).get()
-        Log.d("Luke", "k")
-        return ""
+        return (doc.getElementById("content").childNode(0) as TextNode).wholeText
     }
 
 }
