@@ -95,4 +95,11 @@ public class Utils {
         realm.close();
         return list;
     }
+
+    public static SingleNovel getNovel(int id) {
+        Realm realm = Realm.getDefaultInstance();
+        SingleNovel novel = realm.copyFromRealm(realm.where(SingleNovel.class).greaterThanOrEqualTo("id", id).findAll().sort("id").first());
+        realm.close();
+        return novel;
+    }
 }

@@ -1,5 +1,6 @@
 package com.foreceipt.mybooks
 
+import android.content.Intent
 import android.os.AsyncTask
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
@@ -18,29 +19,35 @@ class MainActivity : AppCompatActivity() {
         Realm.init(this)
         object : AsyncTask<Unit, Unit, Unit>(){
             override fun doInBackground(vararg params: Unit?): Unit {
-                val doc = Jsoup.connect("$base_url/book/55970/").get()
-                for (item in doc.select("a[href]")){
+                try{
+                    val doc = Jsoup.connect("$base_url/book/55970/").get()
+                    for (item in doc.select("a[href]")){
 //                    Log.d("Luke", (item.childNode(0) as TextNode).wholeText)
-                    val numFromName = Utils.getNumFromName((item.childNode(0) as TextNode).wholeText)
+                        val numFromName = Utils.getNumFromName((item.childNode(0) as TextNode).wholeText)
 //                    Log.d("Luke", numFromName.toString())
 //                    Log.d("Luke", item.attr("href"))
-                    if(numFromName > 0){
-                        val singleNovel = SingleNovel()
-                        singleNovel.id = numFromName
-                        singleNovel.url = item.attr("href")
-                        Utils.addOrUpdate(singleNovel)
+                        if(numFromName > 0){
+                            val singleNovel = SingleNovel()
+                            singleNovel.id = numFromName
+                            singleNovel.url = item.attr("href")
+                            Utils.addOrUpdate(singleNovel)
+                        }
                     }
-                }
 
-                for (item in Utils.getNotDownloadNovelList()){
+                    for (item in Utils.getNotDownloadNovelList()){
 //                    Log.d("Luke", item.id.toString()+","+item.url)
-                    item.content = getContent(item)
-                    Utils.addOrUpdate(item)
-                    Log.d("Luke", item.id.toString() + "Done")
-                }
+                        item.content = getContent(item)
+                        Utils.addOrUpdate(item)
+                        Log.d("Luke", item.id.toString() + "Done")
+                    }
+                }catch (e: Exception){
 
+                }
             }
         }.execute()
+        val intent = Intent(this, ContentActivity::class.java)
+        intent.putExtra("data", 1)
+        startActivity(intent)
 
     }
 
