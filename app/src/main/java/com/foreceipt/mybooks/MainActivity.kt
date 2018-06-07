@@ -6,6 +6,8 @@ import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.util.Log
 import io.realm.Realm
+import io.realm.RealmConfiguration
+import kotlinx.android.synthetic.main.activity_main.*
 import org.jsoup.Jsoup
 import org.jsoup.nodes.TextNode
 
@@ -17,6 +19,11 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         Realm.init(this)
+        val config = RealmConfiguration.Builder()
+                .deleteRealmIfMigrationNeeded()
+                .name("myrealm.realm")
+                .build()
+        Realm.setDefaultConfiguration(config)
         object : AsyncTask<Unit, Unit, Unit>(){
             override fun doInBackground(vararg params: Unit?): Unit {
                 try{
@@ -36,26 +43,41 @@ class MainActivity : AppCompatActivity() {
 
                     for (item in Utils.getNotDownloadNovelList()){
 //                    Log.d("Luke", item.id.toString()+","+item.url)
-                        item.content = getContent(item)
-                        Utils.addOrUpdate(item)
-                        Log.d("Luke", item.id.toString() + "Done")
+                        try {
+                            item.content = getContent(item)
+                            Utils.addOrUpdate(item)
+                            Log.d("Luke", item.id.toString() + "Done")
+                        }catch (e: Exception){
+
+                        }
                     }
                 }catch (e: Exception){
 
                 }
             }
         }.execute()
-        val intent = Intent(this, ContentActivity::class.java)
-        intent.putExtra("data", 1)
-        startActivity(intent)
+        main_activity_go.setOnClickListener {
+            val intent = Intent(this, ContentActivity::class.java)
+            intent.putExtra("data", main_activity_num.text.toString().toIntOrNull() ?: 1)
+            startActivity(intent)
+        }
 
     }
 
     fun getContent(item: SingleNovel): String{
         val url = item.url
-//        val url = "/book/55970/3049012.html"
+//        val url = "/book/55970/3049112.html"
         val doc = Jsoup.connect(base_url + url).get()
-        return (doc.getElementById("content").childNode(0) as TextNode).wholeText
+        val sb = StringBuilder()
+        for(item in doc.getElementById("content").childNodes()){
+            if(item is TextNode){
+                val s = (item as TextNode).wholeText
+                if(!s.contains("<br>")){
+                    sb.append(s)
+                }
+            }
+        }
+        return sb.toString()
     }
 
 }
